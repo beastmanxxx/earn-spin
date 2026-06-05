@@ -1,0 +1,92 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-pink: var(--neon-pink);
+  --color-neon-green: var(--neon-green);
+}
+
+:root {
+  --radius: 1rem;
+  --background: oklch(0.12 0.04 280);
+  --foreground: oklch(0.98 0.01 280);
+  --card: oklch(0.22 0.06 285 / 0.55);
+  --card-foreground: oklch(0.98 0.01 280);
+  --popover: oklch(0.18 0.05 285);
+  --popover-foreground: oklch(0.98 0.01 280);
+  --primary: oklch(0.7 0.2 295);
+  --primary-foreground: oklch(0.15 0.04 280);
+  --secondary: oklch(0.3 0.08 290 / 0.6);
+  --secondary-foreground: oklch(0.98 0.01 280);
+  --muted: oklch(0.25 0.05 285 / 0.5);
+  --muted-foreground: oklch(0.75 0.04 285);
+  --accent: oklch(0.35 0.1 295 / 0.6);
+  --accent-foreground: oklch(0.98 0.01 280);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.4 0.1 290 / 0.35);
+  --input: oklch(0.25 0.06 285 / 0.6);
+  --ring: oklch(0.7 0.2 295);
+  --gold: oklch(0.78 0.17 75);
+  --gold-foreground: oklch(0.2 0.05 60);
+  --neon-cyan: oklch(0.8 0.15 195);
+  --neon-pink: oklch(0.7 0.22 0);
+  --neon-green: oklch(0.78 0.18 160);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body, #root { height: 100%; }
+  body {
+    color: var(--color-foreground);
+    background-color: #06030f;
+  }
+}
+
+@layer utilities {
+  .galaxy-bg {
+    background-image: url('/src/assets/galaxy-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+  .glass {
+    background: linear-gradient(180deg, oklch(0.25 0.08 290 / 0.55), oklch(0.18 0.06 285 / 0.45));
+    backdrop-filter: blur(14px);
+    border: 1px solid oklch(0.55 0.15 290 / 0.25);
+    box-shadow: 0 8px 30px oklch(0.1 0.05 280 / 0.5);
+  }
+  .glow-gold {
+    box-shadow: 0 0 24px oklch(0.78 0.17 75 / 0.5);
+  }
+  .text-gold { color: var(--color-gold); }
+  .bg-gold { background-color: var(--color-gold); color: var(--color-gold-foreground); }
+}
