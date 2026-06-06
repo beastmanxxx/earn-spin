@@ -31,7 +31,7 @@ export function markApprovalProcessed(id: string) {
 }
 
 export const REFERRAL_REWARD = 250;
-export type ReferralTaskKey = "signup" | "spin5" | "game" | "watchAd" | "wallet" | "profile";
+export type ReferralTaskKey = "signup" | "spin5" | "game" | "wallet" | "profile";
 
 export type ReferralState = {
   tasks: Record<ReferralTaskKey, boolean>;
@@ -43,7 +43,7 @@ export type ReferralState = {
 };
 
 const DEFAULT_REFERRAL: ReferralState = {
-  tasks: { signup: false, spin5: false, game: false, watchAd: false, wallet: false, profile: false },
+  tasks: { signup: false, spin5: false, game: false, wallet: false, profile: false },
   spinCount: 0,
   credited: false,
   total: 0,
@@ -102,7 +102,7 @@ export const store = {
   },
   getCoins(): number {
     if (typeof window === "undefined") return 0;
-    return Number(localStorage.getItem(KEYS.coins) ?? "200");
+    return Number(localStorage.getItem(KEYS.coins) ?? "0");
   },
   addCoins(n: number) {
     const c = store.getCoins() + n;
@@ -139,11 +139,12 @@ export const store = {
         window.dispatchEvent(new Event("coins-changed"));
         window.dispatchEvent(new Event("referral-changed"));
       } else {
-        // Create default user profile in Firebase
+        const code = generateReferralCode(uid);
         await setDoc(ref, {
           coins: store.getCoins(),
           referral: readReferral(),
-          onboarded: store.isOnboarded()
+          onboarded: store.isOnboarded(),
+          referralCode: code,
         });
       }
     } catch (e) {
@@ -195,7 +196,8 @@ export const store = {
 
 function maybeCredit(r: ReferralState) {
   if (r.credited) return;
-  const allDone = (Object.keys(r.tasks) as ReferralTaskKey[]).every((k) => r.tasks[k]);
+  const requiredKeys: ReferralTaskKey[] = ["signup", "spin5", "game", "wallet", "profile"];
+  const allDone = requiredKeys.every((k) => r.tasks[k]);
   if (allDone && r.total > 0) {
     r.credited = true;
     r.successful += 1;
@@ -231,4 +233,48 @@ export function useReferral() {
   }, []);
   const pending = Math.max(0, r.total - r.successful);
   return { ...r, pending };
+}
+
+/** Generate a unique 8-char referral code from uid */
+export function generateReferralCode(uid: string): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    const charCode = uid.charCodeAt(i % uid.length) || i;
+    code += chars[charCode % chars.length];
+  }
+  return code;
+}
+
+/** Fetch this user's referral code from Firestore (or generate one) */
+export async function getMyReferralCode(uid: string): Promise<string> {
+  const _db = db();
+  if (!_db || !uid) return generateReferralCode(uid);
+  try {
+    const snap = await getDoc(doc(_db, "users", uid));
+    if (snap.exists() && snap.data().referralCode) {
+      return snap.data().referralCode as string;
+    }
+    const code = generateReferralCode(uid);
+    await setDoc(doc(_db, "users", uid), { referralCode: code }, { merge: true });
+    return code;
+  } catch {
+    return generateReferralCode(uid);
+  }
+}
+
+/** Credit the referrer 250 coins when a new user signs up with their code */
+export async function creditReferrer(referralCode: string) {
+  const _db = db();
+  if (!_db || !referralCode) return;
+  try {
+    const { collection, query, where, getDocs, updateDoc, increment } = await import("firebase/firestore");
+    const q = query(collection(_db, "users"), where("referralCode", "==", referralCode));
+    const snap = await getDocs(q);
+    snap.forEach(async (docSnap) => {
+      await updateDoc(docSnap.ref, { coins: increment(REFERRAL_REWARD) });
+    });
+  } catch (e) {
+    console.error("Failed to credit referrer", e);
+  }
 }

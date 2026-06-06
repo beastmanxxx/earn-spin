@@ -1,12 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { Mail, Lock, Sparkles, User } from "lucide-react";
-import { store } from "@/lib/store";
+import { Mail, Lock, Sparkles, User, Tag } from "lucide-react";
+import { store, creditReferrer } from "@/lib/store";
 import { auth } from "@/lib/firebase";
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile
 } from "firebase/auth";
@@ -31,7 +31,19 @@ function AuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Read referral code from URL params (e.g. ?ref=ABCD1234) and auto-fill
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      setReferralCode(ref.toUpperCase());
+      setMode("signup");
+    }
+  }, []);
 
   // Persistent login: if a user is already saved locally, skip login entirely.
   useEffect(() => {
@@ -58,17 +70,24 @@ function AuthScreen() {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match.");
         }
-        
+
         const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
-        
-        // Save user to local store
+
         store.setUser({
           uid: userCredential.user.uid,
           name: name,
-          phone: email, // using email as the contact identifier
+          phone: email,
         });
+
         await store.syncWithFirebase(userCredential.user.uid);
+
+        // If referred by someone, credit the referrer 250 coins
+        if (referralCode.trim()) {
+          await creditReferrer(referralCode.trim().toUpperCase());
+          toast.success("Referral applied! Your friend earned 250 coins 🎉");
+        }
+
         toast.success("Account created successfully!");
         nav({ to: "/welcome" });
 
@@ -76,10 +95,9 @@ function AuthScreen() {
         if (!email.trim() || !password.trim()) {
           throw new Error("Please fill in all fields.");
         }
-        
+
         const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-        
-        // Save user to local store
+
         store.setUser({
           uid: userCredential.user.uid,
           name: userCredential.user.displayName || "User",
@@ -88,12 +106,12 @@ function AuthScreen() {
         await store.syncWithFirebase(userCredential.user.uid);
         toast.success("Welcome back!");
         nav({ to: store.isOnboarded() ? "/home" : "/welcome" });
-        
+
       } else if (mode === "forgot_password") {
         if (!email.trim()) {
           throw new Error("Please enter your email address.");
         }
-        
+
         await sendPasswordResetEmail(firebaseAuth, email);
         toast.success("Password reset email sent! Check your inbox.");
         setMode("login");
@@ -178,24 +196,42 @@ function AuthScreen() {
             )}
 
             {mode === "signup" && (
-              <div>
-                <label className="text-xs text-muted-foreground">Confirm Password</label>
-                <div className="mt-1 flex items-center gap-2 rounded-xl bg-input/70 border border-border px-3 py-2.5 text-sm focus-within:border-primary">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="flex-1 bg-transparent outline-none"
-                  />
+              <>
+                <div>
+                  <label className="text-xs text-muted-foreground">Confirm Password</label>
+                  <div className="mt-1 flex items-center gap-2 rounded-xl bg-input/70 border border-border px-3 py-2.5 text-sm focus-within:border-primary">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="flex-1 bg-transparent outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div>
+                  <label className="text-xs text-muted-foreground">
+                    Referral Code <span className="text-muted-foreground/50">(Optional)</span>
+                  </label>
+                  <div className="mt-1 flex items-center gap-2 rounded-xl bg-input/70 border border-border px-3 py-2.5 text-sm focus-within:border-primary">
+                    <Tag className="h-4 w-4 text-gold" />
+                    <input
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                      placeholder="Enter friend's referral code"
+                      className="flex-1 bg-transparent outline-none tracking-widest font-mono text-gold"
+                      maxLength={8}
+                    />
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full rounded-xl bg-primary text-primary-foreground font-semibold py-3 hover:opacity-90 transition disabled:opacity-50"
           >

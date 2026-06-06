@@ -2,16 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { CoinBadge } from "@/components/CoinBadge";
-import { Sparkles, Users, Receipt, Shield, Star, LogOut, Copy, X, Check, ShieldCheck } from "lucide-react";
+import { Sparkles, Users, Receipt, Shield, Star, LogOut, Copy, X, Check, ShieldCheck, Share2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { store, useCoins, useReferral } from "@/lib/store";
+import { store, useCoins, useReferral, getUserId, getMyReferralCode } from "@/lib/store";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — EarnSpin Rewards" }] }),
   component: Profile,
 });
-
-const CODE = "ES9YLU5N";
 
 function Profile() {
   const nav = useNavigate();
@@ -19,11 +17,38 @@ function Profile() {
   const coins = useCoins();
   const referral = useReferral();
   const [show, setShow] = useState<"privacy" | "refer" | null>(null);
+  const [myCode, setMyCode] = useState("--------");
+
   useEffect(() => { store.markReferralTask("profile"); }, []);
+
+  // Load unique referral code from Firebase
+  useEffect(() => {
+    const uid = getUserId();
+    if (!uid) return;
+    getMyReferralCode(uid).then(setMyCode);
+  }, []);
 
   const logout = () => {
     store.clear();
     nav({ to: "/" });
+  };
+
+  const shareLink = typeof window !== "undefined"
+    ? `${window.location.origin}/?ref=${myCode}`
+    : `https://earnspin.app/?ref=${myCode}`;
+
+  const handleShare = async () => {
+    const text = `🎰 Join EarnSpin Rewards & earn real money!\nSpin daily, play games, and redeem coins as cash.\n\nUse my referral code *${myCode}* when signing up!\n👉 ${shareLink}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "EarnSpin Rewards", text, url: shareLink });
+      } catch { /* user cancelled */ }
+    } else {
+      // Fallback: open WhatsApp
+      const wa = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(wa, "_blank");
+    }
   };
 
   return (
@@ -40,7 +65,7 @@ function Profile() {
           </div>
           <div className="flex-1">
             <p className="font-bold">{user?.name || "Player"}</p>
-            <p className="text-xs text-muted-foreground">{user?.phone || "guest"}@earnspin.app</p>
+            <p className="text-xs text-muted-foreground">{user?.phone || "guest"}</p>
             <span className="inline-flex items-center gap-1 text-xs text-gold mt-1">🪙 {coins} Coins</span>
           </div>
         </div>
@@ -65,10 +90,28 @@ function Profile() {
           <p className="text-gold font-bold text-lg mt-0.5">🪙 {referral.coinsEarned}</p>
         </div>
 
-        <div className="glass rounded-2xl p-4 text-center">
+        {/* Referral Code Card */}
+        <div className="glass rounded-2xl p-4 text-center space-y-3">
           <p className="text-xs text-muted-foreground">My Referral Code</p>
-          <p className="text-2xl font-bold tracking-[0.3em] text-neon-cyan mt-1">{CODE}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">Share code & earn 250 coins per referral</p>
+          <div className="flex items-center justify-center gap-3">
+            <p className="text-2xl font-bold tracking-[0.3em] text-neon-cyan">{myCode}</p>
+            <button
+              onClick={() => { navigator.clipboard?.writeText(myCode); }}
+              className="text-xs flex items-center gap-1 text-muted-foreground hover:text-neon-cyan transition"
+            >
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Share code & earn 250 coins per referral</p>
+
+          {/* Share to Friend Button */}
+          <button
+            onClick={handleShare}
+            className="w-full rounded-xl bg-gradient-to-r from-neon-cyan/80 to-primary/80 text-background font-semibold py-3 flex items-center justify-center gap-2 hover:opacity-90 transition"
+          >
+            <Share2 className="h-4 w-4" />
+            Share to Friend
+          </button>
         </div>
 
         <div className="space-y-2">
@@ -88,7 +131,7 @@ function Profile() {
         <p className="text-center text-[11px] text-muted-foreground pt-2">EarnSpin Rewards v1.0.0</p>
       </div>
 
-      {show === "refer" && <ReferSheet onClose={() => setShow(null)} />}
+      {show === "refer" && <ReferSheet onClose={() => setShow(null)} myCode={myCode} />}
       {show === "privacy" && <PrivacySheet onClose={() => setShow(null)} />}
     </AppLayout>
   );
@@ -122,16 +165,30 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
   );
 }
 
-function ReferSheet({ onClose }: { onClose: () => void }) {
+function ReferSheet({ onClose, myCode }: { onClose: () => void; myCode: string }) {
   const r = useReferral();
+  // watchAd removed from steps
   const steps: { key: keyof typeof r.tasks; label: string }[] = [
     { key: "signup", label: "Complete signup" },
     { key: "spin5", label: `Complete 5 spins (${Math.min(r.spinCount, 5)}/5)` },
     { key: "game", label: "Play at least one game" },
-    { key: "watchAd", label: "Open Watch Ads" },
     { key: "wallet", label: "Visit Wallet" },
     { key: "profile", label: "Visit Profile" },
   ];
+
+  const shareLink = typeof window !== "undefined"
+    ? `${window.location.origin}/?ref=${myCode}`
+    : `https://earnspin.app/?ref=${myCode}`;
+
+  const handleShare = async () => {
+    const text = `🎰 Join EarnSpin Rewards & earn real money!\nSpin daily, play games, and redeem coins as cash.\n\nUse my referral code *${myCode}* when signing up!\n👉 ${shareLink}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "EarnSpin Rewards", text, url: shareLink }); } catch { }
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    }
+  };
+
   return (
     <Sheet title="Invite Friends" onClose={onClose}>
       <div className="text-center">
@@ -140,8 +197,8 @@ function ReferSheet({ onClose }: { onClose: () => void }) {
         </div>
         <p className="text-sm mt-3">Earn 250 coins when a friend joins with your code and completes all required actions.</p>
         <div className="mt-4 glass rounded-xl py-4 flex items-center justify-center gap-3">
-          <span className="text-2xl font-bold tracking-[0.3em] text-neon-cyan">{CODE}</span>
-          <button onClick={() => navigator.clipboard?.writeText(CODE)} className="text-xs flex items-center gap-1 text-muted-foreground">
+          <span className="text-2xl font-bold tracking-[0.3em] text-neon-cyan">{myCode}</span>
+          <button onClick={() => navigator.clipboard?.writeText(myCode)} className="text-xs flex items-center gap-1 text-muted-foreground">
             <Copy className="h-3 w-3" />Copy
           </button>
         </div>
@@ -168,7 +225,13 @@ function ReferSheet({ onClose }: { onClose: () => void }) {
           </p>
         </div>
 
-        <button className="mt-4 w-full rounded-xl bg-primary text-primary-foreground font-semibold py-3">Share Referral Code</button>
+        <button
+          onClick={handleShare}
+          className="mt-4 w-full rounded-xl bg-gradient-to-r from-neon-cyan/80 to-primary/80 text-background font-semibold py-3 flex items-center justify-center gap-2"
+        >
+          <Share2 className="h-4 w-4" />
+          Share Referral Link
+        </button>
       </div>
     </Sheet>
   );
