@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Sparkles, ArrowRight, ShieldCheck, Gamepad2, Coins, Share2, Menu, X } from "lucide-react";
+import { Sparkles, ArrowRight, ShieldCheck, Gamepad2, Coins, Share2, Menu, X, Tag } from "lucide-react";
 import { store } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -210,7 +210,7 @@ function LandingPage() {
           <div>
             <h4 className="font-semibold mb-4 text-foreground">Company</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><Link to="/about" className="hover:text-primary transition">About Us</Link></li>
+              <li><a href="#how-it-works" className="hover:text-primary transition">About Us</a></li>
               <li><Link to="/contact" className="hover:text-primary transition">Contact Support</Link></li>
               <li><a href="#how-it-works" className="hover:text-primary transition">How it Works</a></li>
             </ul>
