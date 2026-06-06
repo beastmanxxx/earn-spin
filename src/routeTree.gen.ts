@@ -12,10 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as SpinRouteImport } from './routes/spin'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as GamesRouteImport } from './routes/games'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -34,6 +38,11 @@ const VerifyRoute = VerifyRouteImport.update({
   path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
+  id: '/terms-of-service',
+  path: '/terms-of-service',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SpinRoute = SpinRouteImport.update({
   id: '/spin',
   path: '/spin',
@@ -44,6 +53,11 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -52,6 +66,16 @@ const HomeRoute = HomeRouteImport.update({
 const GamesRoute = GamesRouteImport.update({
   id: '/games',
   path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -68,10 +92,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/games': typeof GamesRoute
   '/home': typeof HomeRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/spin': typeof SpinRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/verify': typeof VerifyRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
@@ -79,10 +107,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/games': typeof GamesRoute
   '/home': typeof HomeRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/spin': typeof SpinRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/verify': typeof VerifyRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
@@ -91,10 +123,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/games': typeof GamesRoute
   '/home': typeof HomeRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/spin': typeof SpinRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/verify': typeof VerifyRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
@@ -104,10 +140,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/auth'
+    | '/contact'
     | '/games'
     | '/home'
+    | '/privacy-policy'
     | '/profile'
     | '/spin'
+    | '/terms-of-service'
     | '/verify'
     | '/wallet'
     | '/welcome'
@@ -115,10 +155,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/auth'
+    | '/contact'
     | '/games'
     | '/home'
+    | '/privacy-policy'
     | '/profile'
     | '/spin'
+    | '/terms-of-service'
     | '/verify'
     | '/wallet'
     | '/welcome'
@@ -126,10 +170,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/auth'
+    | '/contact'
     | '/games'
     | '/home'
+    | '/privacy-policy'
     | '/profile'
     | '/spin'
+    | '/terms-of-service'
     | '/verify'
     | '/wallet'
     | '/welcome'
@@ -138,10 +186,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
+  ContactRoute: typeof ContactRoute
   GamesRoute: typeof GamesRoute
   HomeRoute: typeof HomeRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
   SpinRoute: typeof SpinRoute
+  TermsOfServiceRoute: typeof TermsOfServiceRoute
   VerifyRoute: typeof VerifyRoute
   WalletRoute: typeof WalletRoute
   WelcomeRoute: typeof WelcomeRoute
@@ -170,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms-of-service': {
+      id: '/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof TermsOfServiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/spin': {
       id: '/spin'
       path: '/spin'
@@ -184,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
@@ -196,6 +262,20 @@ declare module '@tanstack/react-router' {
       path: '/games'
       fullPath: '/games'
       preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -218,10 +298,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
+  ContactRoute: ContactRoute,
   GamesRoute: GamesRoute,
   HomeRoute: HomeRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
   SpinRoute: SpinRoute,
+  TermsOfServiceRoute: TermsOfServiceRoute,
   VerifyRoute: VerifyRoute,
   WalletRoute: WalletRoute,
   WelcomeRoute: WelcomeRoute,
